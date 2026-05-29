@@ -775,34 +775,26 @@ input:checked + .slider:before {
 
 .equation-text {
   font-family: 'Outfit', sans-serif;
-  font-size: 4.5rem;
+  font-size: 3.6rem; /* 수식과 숫자가 자연스럽게 녹아나도록 콤팩트화 */
   font-weight: 800;
   color: #fff;
   text-align: center;
   transition: color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
-.equation-input-wrapper {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 60px;
-}
-
-.input-glow-box {
-  min-width: 90px;
-  height: 50px;
-  border-bottom: 3px solid rgba(255,255,255,0.2);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Outfit', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 800;
+/* 인라인 입력창 네온 발광 효과 */
+.equation-input-inline {
   color: var(--p-color);
-  text-shadow: 0 0 10px var(--p-color);
-  padding: 0 10px;
+  text-shadow: 0 0 10px var(--p-color), 0 0 20px var(--p-color);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  min-width: 45px;
+  text-align: left;
+  display: inline-block;
   transition: all 0.1s ease;
 }
 

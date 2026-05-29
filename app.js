@@ -241,6 +241,7 @@ let gameDuration = 60; // 초 단위
 let gameCategory = 'gugudan'; // gugudan, 19dan
 let gameMode = 'timeattack'; // timeattack, survival
 let selectedDans = [];
+let gameActiveDans = []; // 현재 판에서 실제 활성화되어 사용된 고유 단수 조합 백업 복사본
 
 let gameTimer = null;
 let gameTimeLeft = 0;
@@ -1353,6 +1354,7 @@ function switchScreen(screenId) {
 function startGame() {
   isGameRunning = true;
   isFeverTimeActive = false;
+  gameActiveDans = [...selectedDans]; // 게임 시작 시점의 실제 단수 설정을 불변 복사하여 데이터 정합성 보장
   
   // 헤더 타이머 피버타임 경고 클래스 클린업
   const statusText = document.getElementById('header-status-text');
@@ -1474,9 +1476,9 @@ function buildGamePlayLayout() {
       </div>
       
       <div class="equation-panel" id="eq-panel-${player.id}">
-        <div class="equation-text" id="eq-text-${player.id}">? × ?</div>
-        <div class="equation-input-wrapper">
-          <div class="input-glow-box" id="eq-input-${player.id}">_</div>
+        <div class="equation-text" id="eq-text-${player.id}">
+          <span id="eq-formula-${player.id}">? × ? =</span>
+          <span class="equation-input-inline" id="eq-input-${player.id}">_</span>
         </div>
       </div>
       
@@ -1652,11 +1654,15 @@ function showNextQuestion(playerId) {
   
   player.currentQuestion = q;
   
-  const eqText = document.getElementById(`eq-text-${playerId}`);
+  const formulaEl = document.getElementById(`eq-formula-${playerId}`);
   const eqInput = document.getElementById(`eq-input-${playerId}`);
   
-  eqText.innerText = `${q.multiplicand} × ${q.multiplier}`;
-  eqInput.innerText = '_';
+  if (formulaEl) {
+    formulaEl.innerText = `${q.multiplicand} × ${q.multiplier} =`;
+  }
+  if (eqInput) {
+    eqInput.innerText = '_';
+  }
   player.currentInput = '';
   player.attempts = 0;
   player.questionStartTime = performance.now();
@@ -1705,7 +1711,9 @@ function handlePlayerKeyInput(playerId, key) {
   
   // 화면 입력 갱신
   const eqInput = document.getElementById(`eq-input-${playerId}`);
-  eqInput.innerText = player.currentInput || '_';
+  if (eqInput) {
+    eqInput.innerText = player.currentInput || '_';
+  }
   
   // 정답 자릿수와 동일해지는 순간 검사 수행 (엔터 없이 자동 검증)
   if (player.currentInput.length === q.answerStr.length) {
@@ -1829,7 +1837,9 @@ function handlePlayerKeyInput(playerId, key) {
       // 한 번만 재입력 기회를 더 줌 (문제를 교체하지 않고 입력창만 비움)
       if (player.attempts === 1) {
         player.currentInput = '';
-        eqInput.innerText = '_';
+        if (eqInput) {
+          eqInput.innerText = '_';
+        }
       } else {
         // 두 번 모두 오답인 경우 즉시 다음 문제로 스킵
         player.currentIndex++;
@@ -2023,7 +2033,7 @@ function endGame() {
   players.forEach(player => {
     const name = player.name.trim() || `플레이어 ${player.id}`;
     const durLabel = (gameMode === 'survival') ? 'survival' : gameDuration;
-    const dansStr = selectedDans.slice().sort((a, b) => a - b).join('-');
+    const dansStr = gameActiveDans.slice().sort((a, b) => a - b).join('-');
     const optionKey = `gopsem_high_${name}_${gameCategory}_${durLabel}_${dansStr}`;
     
     // 오늘 날짜 구하기 (YYYY-MM-DD 포맷)
@@ -2218,7 +2228,7 @@ function renderResultsDashboard() {
     // 최고 기록 정보 조회 (동일 옵션 기준)
     const name = player.name.trim() || `플레이어 ${player.id}`;
     const durLabel = (gameMode === 'survival') ? 'survival' : gameDuration;
-    const dansStr = selectedDans.slice().sort((a, b) => a - b).join('-');
+    const dansStr = gameActiveDans.slice().sort((a, b) => a - b).join('-');
     const optionKey = `gopsem_high_${name}_${gameCategory}_${durLabel}_${dansStr}`;
     
     const d = new Date();
