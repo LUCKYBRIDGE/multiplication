@@ -2312,31 +2312,35 @@ body.compat-mode-active .fever-start-toast {
    👤 1인 플레이 시 스마트보드 가로 퍼짐 방지 스타일 (Compact Fit)
    ========================================== */
 
-/* 1인용 게임 플레이 화면 */
+/* 1인용 분할 그리드 컨테이너 자체를 600px로 제한 및 중앙 정렬 */
 .players-grid-1 {
-  justify-content: center; /* 가로 방향 중앙 정렬 */
-  background: rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
 }
 
-.players-grid-1 .player-column {
-  flex: 0 1 600px !important; /* 스마트보드 터치 한눈 가독성 너비 (최대 600px) */
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+/* 1인용 결과 그리드(#result-grid)의 둥근 모서리와 패널 느낌을 600px 너비 내에 정렬 */
+#result-grid.players-grid-1 {
+  background-color: rgba(22, 29, 48, 0.4);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+}
+
+/* 1인용 게임 플레이 화면 컨테이너에 약간의 테두리 보완으로 단독 콘솔화 */
+#game-grid.players-grid-1 {
   border-left: 1px solid rgba(255, 255, 255, 0.08);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(var(--p-color), 0.04) !important;
 }
 
-/* 1인용 결과 분석 화면 */
+/* 1인용 자식 열들은 부모의 100%를 자연스럽게 꽉 채움 */
+.players-grid-1 .player-column,
 .players-grid-1 .result-column {
-  flex: 0 1 600px !important; /* 가로로 너무 찢어지지 않도록 고정 */
+  flex: 1 1 100% !important;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.7) !important;
+  max-width: 100% !important;
+  border-left: none !important;
+  border-right: none !important;
 }
 
 /* 1인 모드일 때 전체 화면 레이아웃 중앙 집약 보정 */
