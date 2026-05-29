@@ -53,12 +53,16 @@ class SoundManager {
   }
 
   // 2) 정답음 (도-미-솔 상승 아르페지오)
-  playCorrect() {
+  playCorrect(combo = 0) {
     if (!this.enabled) return;
     this.init();
 
     const now = this.ctx.currentTime;
-    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+    
+    // 콤보가 쌓일수록 맑은 피치 아르페지오가 더 높은 주파수로 재생됨 (최대 1.5배)
+    const pitchFactor = 1 + Math.min(combo * 0.05, 0.5);
+    const baseNotes = [523.25, 659.25, 783.99]; // C5, E5, G5
+    const notes = baseNotes.map(freq => freq * pitchFactor);
     
     notes.forEach((freq, idx) => {
       const osc = this.ctx.createOscillator();
@@ -70,7 +74,9 @@ class SoundManager {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(freq, now + idx * 0.06);
       
-      gain.gain.setValueAtTime(0.08, now + idx * 0.06);
+      // 콤보에 비례하여 볼륨을 맑고 선명하게 미세 증가 (최대 0.12)
+      const volume = 0.08 + Math.min(combo * 0.004, 0.04);
+      gain.gain.setValueAtTime(volume, now + idx * 0.06);
       gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.12);
       
       osc.onended = () => {
@@ -1665,15 +1671,15 @@ function handlePlayerKeyInput(playerId, key) {
     logWeaknessData(player, q.multiplicand, q.multiplier, isCorrect, elapsedMs);
 
     if (isCorrect) {
-      // 정답!
-      sound.playCorrect();
-      
       // 콤보 계산 및 콤보 뱃지 노출
       player.combo++;
       if (player.combo > player.maxCombo) {
         player.maxCombo = player.combo;
       }
       player.correctCount++;
+
+      // 정답 사운드 재생 (콤보 수가 올라갈수록 피치 상승)
+      sound.playCorrect(player.combo);
       
       // 재시도 2회차에 맞춘 것이라면 보너스 차감 (50점 획득)
       let baseScore = 100;
@@ -1695,13 +1701,18 @@ function handlePlayerKeyInput(playerId, key) {
       // 점수 디스플레이 갱신
       document.getElementById(`score-display-${playerId}`).innerText = player.score;
       
-      // 콤보 배지 노출 처리
+      // 콤보 배지 노출 처리 및 통통 튀는 Pop 애니메이션 트리거
       const comboBadge = document.getElementById(`combo-display-${playerId}`);
       if (player.combo > 0) {
         comboBadge.innerText = `${player.combo} COMBO`;
         comboBadge.classList.add('active');
+        
+        // 이전 애니메이션 강제 초기화 후 재동작 유도 (타격감 증폭)
+        comboBadge.classList.remove('combo-pop');
+        void comboBadge.offsetWidth; // DOM reflow 트리거
+        comboBadge.classList.add('combo-pop');
       } else {
-        comboBadge.classList.remove('active');
+        comboBadge.classList.remove('active', 'combo-pop');
       }
       
       // 피버 효과 칼럼 보더 펄스 온
