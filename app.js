@@ -2018,6 +2018,40 @@ function endGame() {
     
     localStorage.setItem(key, JSON.stringify(userStats));
   });
+
+  // [옵션별 최고기록 저장] 익명/임시 이름 포함 모든 플레이어 대상
+  players.forEach(player => {
+    const name = player.name.trim() || `플레이어 ${player.id}`;
+    const durLabel = (gameMode === 'survival') ? 'survival' : gameDuration;
+    const dansStr = selectedDans.slice().sort((a, b) => a - b).join('-');
+    const optionKey = `gopsem_high_${name}_${gameCategory}_${durLabel}_${dansStr}`;
+    
+    // 오늘 날짜 구하기 (YYYY-MM-DD 포맷)
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    
+    let recordData = {
+      allTimeHigh: 0,
+      dailyHighs: {}
+    };
+    
+    const existing = localStorage.getItem(optionKey);
+    if (existing) {
+      try {
+        const parsed = JSON.parse(existing);
+        if (parsed) recordData = Object.assign(recordData, parsed);
+      } catch (e) {
+        console.error(`옵션 최고기록 데이터 로드 에러:`, e);
+      }
+    }
+    
+    // 최고 점수 갱신
+    recordData.allTimeHigh = Math.max(recordData.allTimeHigh || 0, player.score);
+    if (!recordData.dailyHighs) recordData.dailyHighs = {};
+    recordData.dailyHighs[todayStr] = Math.max(recordData.dailyHighs[todayStr] || 0, player.score);
+    
+    localStorage.setItem(optionKey, JSON.stringify(recordData));
+  });
   
   // 세이브 기록 변경 시 로비 화면의 유저 리스트를 동적 업데이트
   if (statsUpdated) {
@@ -2181,6 +2215,37 @@ function renderResultsDashboard() {
       `;
     }
 
+    // 최고 기록 정보 조회 (동일 옵션 기준)
+    const name = player.name.trim() || `플레이어 ${player.id}`;
+    const durLabel = (gameMode === 'survival') ? 'survival' : gameDuration;
+    const dansStr = selectedDans.slice().sort((a, b) => a - b).join('-');
+    const optionKey = `gopsem_high_${name}_${gameCategory}_${durLabel}_${dansStr}`;
+    
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    
+    let allTimeHigh = player.score;
+    let todayHigh = player.score;
+    
+    const recordExisting = localStorage.getItem(optionKey);
+    if (recordExisting) {
+      try {
+        const parsed = JSON.parse(recordExisting);
+        if (parsed) {
+          allTimeHigh = Math.max(parsed.allTimeHigh || 0, player.score);
+          if (parsed.dailyHighs) {
+            todayHigh = Math.max(parsed.dailyHighs[todayStr] || 0, player.score);
+          }
+        }
+      } catch (e) {
+        console.error(`결과화면 최고기록 분석 에러:`, e);
+      }
+    }
+
+    // 신기록 달성 여부 판단
+    const isNewHigh = player.score > 0 && player.score >= allTimeHigh;
+    const highBadgeHtml = isNewHigh ? `<span class="new-highscore-badge" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); margin-left: 6px; vertical-align: middle;">👑 신기록</span>` : '';
+
     const col = document.createElement('div');
     col.className = `result-column ${player.theme.className}`;
     col.style.setProperty('--p-color', player.theme.hex);
@@ -2207,6 +2272,26 @@ function renderResultsDashboard() {
         <div class="result-stat-card">
           <span class="result-stat-label">평균 속도 (정확도)</span>
           <span class="result-stat-value text-orange">${avgSpeed}초 (${accuracy}%)</span>
+        </div>
+      </div>
+
+      <!-- 옵션별 최고기록 요약 카드 -->
+      <div class="result-record-summary-card" style="margin-bottom: 12px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 4px; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="color: var(--text-muted);">🎯 동일 설정 기록 비교</span>
+          ${highBadgeHtml}
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+          <span style="color: var(--text-muted); font-weight: 700;">역대 최고 기록</span>
+          <span style="color: var(--p2-color); font-weight: 900; font-family: 'Outfit', sans-serif;">${allTimeHigh}점</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+          <span style="color: var(--text-muted); font-weight: 700;">오늘 최고 기록</span>
+          <span style="color: #f59e0b; font-weight: 900; font-family: 'Outfit', sans-serif;">${todayHigh}점</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+          <span style="color: var(--text-muted); font-weight: 700;">현재 기록</span>
+          <span style="color: var(--p1-color); font-weight: 900; font-family: 'Outfit', sans-serif;">${player.score}점</span>
         </div>
       </div>
 
