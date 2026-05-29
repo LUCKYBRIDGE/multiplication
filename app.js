@@ -846,7 +846,24 @@ function bindLobbyEvents() {
   if (btnRestart) {
     bindTouchInteraction(btnRestart, () => {
       sound.playTap();
-      showRestartModal();
+      
+      // 저장된 프로필 유저가 한 명이라도 장착되어 있는지 검사
+      let hasSavedUser = false;
+      if (isProfileRecordMode) {
+        for (let i = 0; i < playersCount; i++) {
+          if (activeLobbyPlayers[i] !== 'new-user') {
+            hasSavedUser = true;
+            break;
+          }
+        }
+      }
+      
+      if (hasSavedUser) {
+        showRestartModal();
+      } else {
+        // 익명 플레이어만 있거나 기록 저장 모드가 꺼져있다면 팝업 없이 즉시 시작
+        startGame();
+      }
     });
   }
 
