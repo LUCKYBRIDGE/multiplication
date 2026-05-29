@@ -1637,6 +1637,13 @@ function handlePlayerKeyInput(playerId, key) {
   const player = players[playerId - 1];
   if (player.eliminated || !isGameRunning || isCountdownActive) return;
   
+  // 초고속 이중 입력(Ghost touch / Bouncing) 방지 필터링 (80ms 이내 연속 입력 무시)
+  const nowTime = performance.now();
+  if (player.lastInputTime && (nowTime - player.lastInputTime) < 80) {
+    return;
+  }
+  player.lastInputTime = nowTime;
+  
   sound.playTap();
   
   const q = player.currentQuestion;
