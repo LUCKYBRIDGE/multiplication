@@ -9,6 +9,9 @@ class SoundManager {
   constructor() {
     this.ctx = null;
     this.enabled = true;
+    this.feverBgmInterval = null;
+    this.feverBgmNodes = [];
+    this.noiseBuffer = null;
   }
 
   init() {
@@ -18,11 +21,26 @@ class SoundManager {
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
+    if (!this.noiseBuffer && this.ctx) {
+      this.noiseBuffer = this.createNoiseBuffer();
+    }
+  }
+
+  createNoiseBuffer() {
+    if (!this.ctx) return null;
+    const bufferSize = this.ctx.sampleRate * 1.0; // 1초
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    return buffer;
   }
 
   toggle(enabled) {
     this.enabled = enabled;
     if (enabled) this.init();
+    if (!enabled) this.stopFeverBGM();
   }
 
   // 1) 키패드 터치음 (짧고 맑은 틱)
@@ -229,15 +247,239 @@ class SoundManager {
     });
   }
 
-  // 8) 피버타임 전용 파티 정답음 (디튠 톱니파 가미된 5화음 팡파르)
+  // 8) 노이즈 합성 기반 드럼 및 파티 사운드 유틸
+  playNoiseHihat(time) {
+    if (!this.enabled || !this.ctx) return;
+    this.init();
+    if (!this.noiseBuffer) return;
+
+    const source = this.ctx.createBufferSource();
+    source.buffer = this.noiseBuffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(8000, time);
+
+    const gain = this.ctx.createGain();
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    gain.gain.setValueAtTime(0.015, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+
+    source.start(time);
+    source.stop(time + 0.05);
+
+    this.feverBgmNodes.push(source);
+    source.onended = () => {
+      source.disconnect();
+      filter.disconnect();
+      gain.disconnect();
+      const idx = this.feverBgmNodes.indexOf(source);
+      if (idx !== -1) this.feverBgmNodes.splice(idx, 1);
+    };
+  }
+
+  playNoiseSnare(time) {
+    if (!this.enabled || !this.ctx) return;
+    this.init();
+    if (!this.noiseBuffer) return;
+
+    const source = this.ctx.createBufferSource();
+    source.buffer = this.noiseBuffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1000, time);
+
+    const gain = this.ctx.createGain();
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    gain.gain.setValueAtTime(0.03, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+    source.start(time);
+    source.stop(time + 0.12);
+
+    this.feverBgmNodes.push(source);
+    source.onended = () => {
+      source.disconnect();
+      filter.disconnect();
+      gain.disconnect();
+      const idx = this.feverBgmNodes.indexOf(source);
+      if (idx !== -1) this.feverBgmNodes.splice(idx, 1);
+    };
+  }
+
+  playSparkle(time) {
+    if (!this.enabled || !this.ctx) return;
+    this.init();
+    if (!this.noiseBuffer) return;
+
+    for (let i = 0; i < 5; i++) {
+      const startTime = time + i * 0.03;
+      const source = this.ctx.createBufferSource();
+      source.buffer = this.noiseBuffer;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(3000 + Math.random() * 2000, startTime);
+      filter.Q.setValueAtTime(10, startTime);
+
+      const gain = this.ctx.createGain();
+
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      gain.gain.setValueAtTime(0.03, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.08);
+
+      source.start(startTime);
+      source.stop(startTime + 0.08);
+
+      source.onended = () => {
+        source.disconnect();
+        filter.disconnect();
+        gain.disconnect();
+      };
+    }
+  }
+
+  // 9) 피버타임 BGM 실시간 루프 엔진
+  startFeverBGM() {
+    if (!this.enabled) return;
+    this.init();
+    
+    this.stopFeverBGM();
+
+    const tempo = 150;
+    const noteLength = 60 / tempo / 2; // 8분음표 단위 시간
+    let step = 0;
+    
+    const baseFreqs = [
+      130.81, 130.81, 155.56, 155.56, 
+      196.00, 196.00, 233.08, 233.08,
+      130.81, 130.81, 155.56, 155.56,
+      174.61, 174.61, 196.00, 196.00
+    ];
+    
+    const arpNotes = [
+      523.25, 783.99, 1046.50, 783.99, 
+      622.25, 932.33, 1244.51, 932.33,
+      587.33, 880.00, 1174.66, 880.00,
+      698.46, 1046.50, 1396.91, 1046.50
+    ];
+
+    const playStep = () => {
+      if (!this.enabled || !this.ctx || this.ctx.state === 'suspended') return;
+      const now = this.ctx.currentTime;
+      
+      // 베이스 연주 (매 4분음표마다)
+      if (step % 2 === 0) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.type = 'sawtooth';
+        const baseIdx = Math.floor(step / 2) % baseFreqs.length;
+        osc.frequency.setValueAtTime(baseFreqs[baseIdx], now);
+        
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(300, now);
+        
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + noteLength * 1.8);
+        
+        osc.start(now);
+        osc.stop(now + noteLength * 1.8);
+        
+        this.feverBgmNodes.push(osc);
+        osc.onended = () => {
+          osc.disconnect();
+          filter.disconnect();
+          gain.disconnect();
+          const idx = this.feverBgmNodes.indexOf(osc);
+          if (idx !== -1) this.feverBgmNodes.splice(idx, 1);
+        };
+      }
+      
+      // 아르페지오 연주 (매 8분음표마다)
+      {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.type = 'triangle';
+        const arpIdx = step % arpNotes.length;
+        osc.frequency.setValueAtTime(arpNotes[arpIdx], now);
+        
+        gain.gain.setValueAtTime(0.02, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + noteLength * 0.95);
+        
+        osc.start(now);
+        osc.stop(now + noteLength * 0.95);
+        
+        this.feverBgmNodes.push(osc);
+        osc.onended = () => {
+          osc.disconnect();
+          gain.disconnect();
+          const idx = this.feverBgmNodes.indexOf(osc);
+          if (idx !== -1) this.feverBgmNodes.splice(idx, 1);
+        };
+      }
+      
+      // 드럼 비트 연주
+      if (step % 4 === 2) {
+        this.playNoiseSnare(now);
+      } else if (step % 2 === 1) {
+        this.playNoiseHihat(now);
+      }
+
+      step = (step + 1) % 32;
+    };
+
+    playStep();
+    this.feverBgmInterval = setInterval(playStep, noteLength * 1000);
+  }
+
+  stopFeverBGM() {
+    if (this.feverBgmInterval) {
+      clearInterval(this.feverBgmInterval);
+      this.feverBgmInterval = null;
+    }
+    
+    this.feverBgmNodes.forEach(node => {
+      try {
+        node.stop();
+      } catch(e) {}
+      try {
+        node.disconnect();
+      } catch(e) {}
+    });
+    this.feverBgmNodes = [];
+  }
+
+  // 10) 피버타임 전용 파티 정답음 (디튠 5화음 + 폭죽 믹싱)
   playFeverCorrect(combo = 0) {
     if (!this.enabled) return;
     this.init();
 
     const now = this.ctx.currentTime;
-    const pitchFactor = 1.1 + Math.min(combo * 0.05, 0.45); // 피버타임 시 본래 도-미-솔-도-미 화음을 가중 피치 시프팅
+    const pitchFactor = 1.1 + Math.min(combo * 0.05, 0.45);
     
-    const baseNotes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+    const baseNotes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
     const notes = baseNotes.map(freq => freq * pitchFactor);
     
     notes.forEach((freq, idx) => {
@@ -253,9 +495,8 @@ class SoundManager {
       oscTriangle.frequency.setValueAtTime(freq, now + idx * 0.04);
       
       oscSawtooth.type = 'sawtooth';
-      oscSawtooth.frequency.setValueAtTime(freq * 0.99, now + idx * 0.04); // 미세 디튠으로 화려함 배가
+      oscSawtooth.frequency.setValueAtTime(freq * 0.99, now + idx * 0.04);
       
-      // 피버타임 전용 풍성한 볼륨
       const volume = 0.10 + Math.min(combo * 0.005, 0.04);
       gain.gain.setValueAtTime(volume, now + idx * 0.04);
       gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.15);
@@ -270,8 +511,10 @@ class SoundManager {
       oscSawtooth.start(now + idx * 0.04);
       
       oscTriangle.stop(now + idx * 0.04 + 0.15);
-      oscSawtooth.stop(now + idx * 0.04 + 0.08); // 톱니파는 어택감만 주고 일찍 컷
+      oscSawtooth.stop(now + idx * 0.04 + 0.08);
     });
+
+    this.playSparkle(now + 4 * 0.04);
   }
 }
 
@@ -1399,6 +1642,7 @@ function switchScreen(screenId) {
 function startGame() {
   isGameRunning = true;
   isFeverTimeActive = false;
+  sound.stopFeverBGM(); // 게임 시작 시 피버 BGM 리셋 보장
   gameActiveDans = [...selectedDans]; // 게임 시작 시점의 실제 단수 설정을 불변 복사하여 데이터 정합성 보장
   
   // 헤더 타이머 피버타임 경고 클래스 클린업
@@ -2025,6 +2269,7 @@ function eliminatePlayer(playerId) {
 
 function stopGame() {
   isGameRunning = false;
+  sound.stopFeverBGM(); // 피버 BGM 즉시 중단 및 리소스 정리
   if (gameTimer) {
     clearInterval(gameTimer);
     gameTimer = null;
@@ -2499,8 +2744,9 @@ function renderPlayerMiniHeatmap(player, mode = 'current') {
 function triggerFeverTimeStart() {
   isFeverTimeActive = true;
   
-  // 1) 상승 경보 멜로디 효과음
+  // 1) 상승 경보 멜로디 효과음 및 피버 BGM 실시간 구동
   sound.playFeverStart();
+  sound.startFeverBGM();
   
   // 2) 타이머 핫핑크 네온 깜빡임 경고 클래스 추가
   const statusText = document.getElementById('header-status-text');
