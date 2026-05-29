@@ -1218,6 +1218,37 @@ input:checked + .slider:before {
   border-color: #fff;
 }
 
+/* 결과 화면 진입 시 3초간 버튼 비활성화 잠금 스타일 */
+.action-btn-neon:disabled,
+.action-btn-neon.disabled-lock {
+  background: #181922 !important;
+  color: #4b5563 !important;
+  border: 1px solid #2d3142 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+  opacity: 0.5;
+}
+
+.action-btn-outline:disabled,
+.action-btn-outline.disabled-lock {
+  background: transparent !important;
+  color: #4b5563 !important;
+  border-color: #2d3142 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  opacity: 0.5;
+}
+
+.header-btn:disabled,
+.header-btn.disabled-lock {
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
+
 /* -------------------------------------------------------------
  * 6. Animations (Shake, Pulsing, etc.)
  * ------------------------------------------------------------- */

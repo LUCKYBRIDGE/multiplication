@@ -542,6 +542,7 @@ let isProfileRecordMode = false; // 프로필 전적 기록 모드 토글 플래
 
 // 피버타임(Fever Time) 글로벌 상태 (마지막 10초)
 let isFeverTimeActive = false;
+let resultLockTimer = null; // 결과화면 3초 잠금용 인터벌 타이머
 
 // 플레이어별 개별 정보 세션
 let players = [];
@@ -1631,7 +1632,63 @@ function switchScreen(screenId) {
     btnHome.classList.remove('hidden');
     btnBack.classList.remove('hidden');
     statusText.innerText = '경기 결과 SUMMARY';
+    
+    // 결과 화면 진입 시 3초 버튼 잠금 실행 (UX 개선)
+    lockResultActions(btnHome, btnBack);
   }
+}
+
+// 결과화면의 메인/다시하기 버튼들을 3초간 비활성화 잠금 처리하는 함수
+function lockResultActions(btnHome, btnBack) {
+  const lobbyBtn = document.getElementById('lobby-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  
+  if (resultLockTimer) {
+    clearInterval(resultLockTimer);
+    resultLockTimer = null;
+  }
+  
+  if (!lobbyBtn || !restartBtn) return;
+  
+  let timeLeft = 3;
+  
+  // 버튼 비활성화 상태 돌입
+  const buttons = [lobbyBtn, restartBtn, btnHome, btnBack];
+  buttons.forEach(btn => {
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('disabled-lock');
+    }
+  });
+  
+  const updateTexts = (seconds) => {
+    lobbyBtn.innerText = `로비 화면으로 (${seconds}초)`;
+    restartBtn.innerText = `동일 설정 재경기 (${seconds}초)`;
+  };
+  
+  updateTexts(timeLeft);
+  
+  resultLockTimer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft > 0) {
+      updateTexts(timeLeft);
+    } else {
+      clearInterval(resultLockTimer);
+      resultLockTimer = null;
+      
+      // 잠금 해제
+      buttons.forEach(btn => {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('disabled-lock');
+        }
+      });
+      
+      // 원래 텍스트 복구
+      lobbyBtn.innerText = '로비 화면으로';
+      restartBtn.innerText = '동일 설정 재경기';
+    }
+  }, 1000);
 }
 
 
