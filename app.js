@@ -228,6 +228,51 @@ class SoundManager {
       osc.stop(now + idx * 0.08 + 0.2);
     });
   }
+
+  // 8) 피버타임 전용 파티 정답음 (디튠 톱니파 가미된 5화음 팡파르)
+  playFeverCorrect(combo = 0) {
+    if (!this.enabled) return;
+    this.init();
+
+    const now = this.ctx.currentTime;
+    const pitchFactor = 1.1 + Math.min(combo * 0.05, 0.45); // 피버타임 시 본래 도-미-솔-도-미 화음을 가중 피치 시프팅
+    
+    const baseNotes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+    const notes = baseNotes.map(freq => freq * pitchFactor);
+    
+    notes.forEach((freq, idx) => {
+      const oscTriangle = this.ctx.createOscillator();
+      const oscSawtooth = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      
+      oscTriangle.connect(gain);
+      oscSawtooth.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      oscTriangle.type = 'triangle';
+      oscTriangle.frequency.setValueAtTime(freq, now + idx * 0.04);
+      
+      oscSawtooth.type = 'sawtooth';
+      oscSawtooth.frequency.setValueAtTime(freq * 0.99, now + idx * 0.04); // 미세 디튠으로 화려함 배가
+      
+      // 피버타임 전용 풍성한 볼륨
+      const volume = 0.10 + Math.min(combo * 0.005, 0.04);
+      gain.gain.setValueAtTime(volume, now + idx * 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.15);
+      
+      oscTriangle.onended = () => {
+        oscTriangle.disconnect();
+        oscSawtooth.disconnect();
+        gain.disconnect();
+      };
+      
+      oscTriangle.start(now + idx * 0.04);
+      oscSawtooth.start(now + idx * 0.04);
+      
+      oscTriangle.stop(now + idx * 0.04 + 0.15);
+      oscSawtooth.stop(now + idx * 0.04 + 0.08); // 톱니파는 어택감만 주고 일찍 컷
+    });
+  }
 }
 
 const sound = new SoundManager();
@@ -1735,8 +1780,12 @@ function handlePlayerKeyInput(playerId, key) {
       }
       player.correctCount++;
 
-      // 정답 사운드 재생 (콤보 수가 올라갈수록 피치 상승)
-      sound.playCorrect(player.combo);
+      // 정답 사운드 재생 (피버타임 여부에 따라 신나는 파티 팡파르 분기)
+      if (isFeverTimeActive) {
+        sound.playFeverCorrect(player.combo);
+      } else {
+        sound.playCorrect(player.combo);
+      }
       
       // 재시도 2회차에 맞춘 것이라면 보너스 차감 (50점 획득)
       let baseScore = 100;
