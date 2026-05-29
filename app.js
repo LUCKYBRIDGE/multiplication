@@ -2046,7 +2046,16 @@ function renderResultsDashboard() {
 
     // 동적 요약 분석 카드 마크업 조립
     let analysisCardHtml = '';
-    if (weakItems.length === 0) {
+    if (player.correctCount === 0) {
+      analysisCardHtml = `
+        <div class="result-analysis-card" style="background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06); box-shadow: none;">
+          <div class="analysis-comment" style="color: var(--text-muted);">💡 아직 맞춘 문제가 없습니다. 다음 판에 다시 기량을 발휘해 보세요!</div>
+          <div class="top-weak-list">
+            <span class="weak-tag" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); text-shadow: none;">도전 필요</span>
+          </div>
+        </div>
+      `;
+    } else if (weakItems.length === 0) {
       analysisCardHtml = `
         <div class="result-analysis-card perfect">
           <div class="analysis-comment">🎉 완벽해요! 모든 문제를 실수 없이 해결했습니다.</div>
