@@ -2307,3 +2307,39 @@ body.compat-mode-active .fever-start-toast {
   opacity: 0.95;
   display: block;
 }
+
+/* ==========================================
+   👤 1인 플레이 시 스마트보드 가로 퍼짐 방지 스타일 (Compact Fit)
+   ========================================== */
+
+/* 1인용 게임 플레이 화면 */
+.players-grid-1 {
+  justify-content: center; /* 가로 방향 중앙 정렬 */
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.players-grid-1 .player-column {
+  flex: 0 1 600px !important; /* 스마트보드 터치 한눈 가독성 너비 (최대 600px) */
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(var(--p-color), 0.04) !important;
+}
+
+/* 1인용 결과 분석 화면 */
+.players-grid-1 .result-column {
+  flex: 0 1 600px !important; /* 가로로 너무 찢어지지 않도록 고정 */
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 1인 모드일 때 전체 화면 레이아웃 중앙 집약 보정 */
+#game-screen, #result-screen {
+  overflow-x: hidden;
+}
