@@ -2211,3 +2211,99 @@ body.compat-mode-active .modal-card {
   animation: none !important;
   border: 2px solid rgba(255, 255, 255, 0.2) !important;
 }
+
+/* ==========================================
+   🚨 마지막 10초 피버타임 (Fever Time) 추가 스타일
+   ========================================== */
+
+/* 피버타임 모든 칼럼 보더 핫핑크 펄스 섬광 */
+.player-column.fever-time-active {
+  border-color: var(--p2-color) !important;
+  box-shadow: inset 0 0 30px rgba(255, 0, 127, 0.15), 0 0 20px rgba(255, 0, 127, 0.25) !important;
+  animation: feverBorderPulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes feverBorderPulse {
+  0% {
+    border-color: #ff007f;
+    box-shadow: inset 0 0 20px rgba(255, 0, 127, 0.1), 0 0 15px rgba(255, 0, 127, 0.15);
+  }
+  100% {
+    border-color: #a855f7;
+    box-shadow: inset 0 0 40px rgba(168, 85, 247, 0.25), 0 0 30px rgba(168, 85, 247, 0.35);
+  }
+}
+
+/* 저사양 전자칠판(호환모드)에서는 CPU 과부하 및 렉을 막기 위해 box-shadow 펄스 및 트랜지션 무력화 */
+body.compat-mode-active .player-column.fever-time-active {
+  animation: none !important;
+  border: 3px solid #ff007f !important;
+  box-shadow: none !important;
+}
+
+/* 피버타임 타이머 핫핑크 네온 깜빡임 */
+#header-status-text.timer-fever-warn {
+  color: #ff007f !important;
+  text-shadow: 0 0 10px rgba(255, 0, 127, 0.8), 0 0 20px rgba(255, 0, 127, 0.5) !important;
+  animation: timerFeverFlash 0.5s infinite alternate steps(2, start);
+}
+
+@keyframes timerFeverFlash {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* 피버타임 시작시 화면 전체 중앙에 순간적으로 터지는 팝업 토스트 */
+.fever-start-toast {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.95) 0%, rgba(124, 58, 237, 0.95) 100%);
+  border: 2px solid #fff;
+  border-radius: 20px;
+  padding: 25px 50px;
+  color: #fff;
+  z-index: 1000;
+  box-shadow: 0 0 50px rgba(255, 0, 127, 0.8);
+  pointer-events: none;
+  text-align: center;
+  animation: feverToastPop 1.4s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes feverToastPop {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  25% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  35% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
+}
+
+.fever-start-toast h2 {
+  font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  margin: 0 0 6px 0;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.fever-start-toast p {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  opacity: 0.95;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+/* 호환모드용 피버 토스트 최적화 (그림자/트랜스폼 제거) */
+body.compat-mode-active .fever-start-toast {
+  box-shadow: none !important;
+  background: #ff007f !important;
+  border: 4px solid #fff !important;
+  animation: none !important;
+  opacity: 0.95;
+  display: block;
+}
