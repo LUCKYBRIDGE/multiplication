@@ -1750,18 +1750,28 @@ function handlePlayerKeyInput(playerId, key) {
       // 콤보 폭파 및 피버 해제
       player.combo = 0;
       const comboBadge = document.getElementById(`combo-display-${playerId}`);
-      if (comboBadge) comboBadge.classList.remove('active');
+      if (comboBadge) comboBadge.classList.remove('active', 'combo-pop');
       
+      // 기둥 전체 적색 점멸 플래시 효과 트리거 (화면 전체 붉어짐)
       const colEl = document.getElementById(`player-col-${playerId}`);
-      if (colEl) colEl.classList.remove('fever-active');
+      if (colEl) {
+        colEl.classList.remove('fever-active', 'flash-wrong-screen');
+        void colEl.offsetWidth; // DOM reflow
+        colEl.classList.add('flash-wrong-screen');
+        setTimeout(() => {
+          colEl.classList.remove('flash-wrong-screen');
+        }, 480);
+      }
       
-      // 오답 피드백 흔들림(shake) + 적색 플래시
+      // 오답 피드백 강렬한 흔들림(shake) + 적색 플래시 테두리
       const panelEl = document.getElementById(`eq-panel-${playerId}`);
       if (panelEl) {
+        panelEl.classList.remove('shake', 'glow-red');
+        void panelEl.offsetWidth; // DOM reflow
         panelEl.classList.add('shake', 'glow-red');
         setTimeout(() => {
           panelEl.classList.remove('shake', 'glow-red');
-        }, 400);
+        }, 420);
       }
       
       // 한 번만 재입력 기회를 더 줌 (문제를 교체하지 않고 입력창만 비움)
