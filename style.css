@@ -439,6 +439,7 @@ body.compat-mode-active .compat-mode-toast {
   cursor: pointer;
   transition: all 0.2s ease;
   touch-action: manipulation;
+  word-break: keep-all; /* 한글 단어 찢어짐 방지 */
 }
 
 .select-btn:hover {
@@ -499,6 +500,7 @@ body.compat-mode-active .compat-mode-toast {
   font-weight: 700;
   color: var(--text-muted);
   transition: all 0.15s ease;
+  white-space: nowrap; /* 단수 글자 줄바꿈 방지 */
 }
 
 .dan-card input[type="checkbox"]:checked + label {
@@ -606,6 +608,7 @@ input:checked + .slider:before {
   gap: 8px;
   width: 100%;
   margin-top: 5px;
+  white-space: nowrap; /* 텍스트 꺾임 방지 */
 }
 
 .action-btn-neon:hover {
@@ -1020,12 +1023,14 @@ input:checked + .slider:before {
   font-size: 0.68rem;
   color: var(--text-muted);
   margin-bottom: 4px;
+  white-space: nowrap; /* 라벨 꺾임 방지 */
 }
 
 .result-stat-value {
   font-size: 1.05rem;
   font-weight: 800;
   font-family: 'Outfit', sans-serif;
+  white-space: nowrap; /* 값 꺾임 방지 */
 }
 
 /* 취약점 분석 히트맵 영역 */
@@ -1206,6 +1211,7 @@ input:checked + .slider:before {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap; /* 텍스트 꺾임 방지 */
 }
 
 .action-btn-outline:hover {
@@ -1799,6 +1805,7 @@ input:checked + .slider:before {
   margin-bottom: 6px;
   text-align: center;
   line-height: 1.3;
+  word-break: keep-all; /* 한글 문장 꺾임 보정 */
 }
 
 .perfect .analysis-comment {
@@ -1820,6 +1827,7 @@ input:checked + .slider:before {
   color: #fecaca;
   padding: 2px 6px;
   border-radius: 4px;
+  white-space: nowrap; /* 태그 꺾임 방지 */
 }
 
 .perfect-tag {
@@ -1830,6 +1838,7 @@ input:checked + .slider:before {
   color: #a7f3d0;
   padding: 2px 6px;
   border-radius: 4px;
+  white-space: nowrap; /* 태그 꺾임 방지 */
 }
 
 .footer-copyright {
@@ -2370,3 +2379,16 @@ body.compat-mode-active .fever-start-toast {
 #game-screen, #result-screen {
   overflow-x: hidden;
 }
+
+/* 결과 요약 기록 비교 카드의 텍스트 꺾임 및 세로 배열 방지 */
+.result-record-summary-card div,
+.result-record-summary-card span {
+  white-space: nowrap;
+}
+
+/* 사용자 칩 이름 및 토글 텍스트 세로 꺾임 원천 방지 */
+.user-chip,
+.weakness-toggle-desc {
+  white-space: nowrap;
+}
+
