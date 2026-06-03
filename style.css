@@ -897,6 +897,17 @@ input:checked + .slider:before {
   overscroll-behavior: none !important;
 }
 
+/* 비활성 화면이 ID 선택자 display 규칙 때문에 레이아웃에 남아 overflow를 만드는 문제 방지 */
+.screen:not(.active) {
+  display: none !important;
+}
+
+.screen.active#lobby-screen,
+.screen.active#game-screen,
+.screen.active#result-screen {
+  display: flex;
+}
+
 .result-dashboard-wrapper {
   width: 100%;
   height: 100%;
@@ -1907,6 +1918,622 @@ input:checked + .slider:before {
   }
 }
 
+@media (max-width: 700px) {
+  #app-header {
+    gap: 5px;
+    padding: 0 8px;
+    overflow: hidden;
+  }
+
+  .header-btn.hidden {
+    display: none;
+  }
+
+  .header-left,
+  .header-right {
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .header-right {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  .header-center {
+    display: none;
+  }
+
+  .header-btn {
+    max-width: 86px;
+    min-width: 0;
+    padding: 5px 7px;
+    border-radius: 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(0.66rem, 2.4vw, 0.76rem);
+    gap: 3px;
+  }
+
+  #btn-header-compat {
+    max-width: 94px;
+    align-items: center;
+    padding: 5px 7px;
+  }
+
+  #btn-header-compat .compat-sub {
+    display: none;
+  }
+
+  #btn-header-sound {
+    max-width: 70px;
+  }
+
+  #btn-header-fullscreen {
+    max-width: 86px;
+  }
+
+  #lobby-screen {
+    align-items: stretch;
+    padding: 8px;
+    overflow: hidden;
+  }
+
+  .lobby-card {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    padding: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .game-title {
+    font-size: clamp(1.35rem, 6vw, 1.75rem);
+  }
+
+  .game-subtitle {
+    margin-bottom: 8px;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+  }
+
+  .user-setup-header {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+    padding: 0 !important;
+  }
+
+  .user-setup-header > div {
+    min-width: 0;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .setup-label-main {
+    font-size: 0.74rem !important;
+    letter-spacing: 0 !important;
+  }
+
+  .profile-mode-switch-wrapper span {
+    font-size: 0.72rem !important;
+  }
+
+  #btn-teacher-setup {
+    padding: 3px 6px !important;
+    font-size: 0.72rem !important;
+  }
+
+  #user-setup-container {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    min-height: 0;
+    max-height: 20dvh;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .user-profile-setup-card,
+  .user-profile-setup-card.span-2 {
+    grid-column: auto;
+  }
+
+  .user-profile-setup-card {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .setup-card-header {
+    font-size: 0.72rem;
+  }
+
+  .user-chips-grid {
+    max-height: 42px;
+  }
+
+  .lobby-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+    margin-bottom: 8px;
+  }
+
+  .setup-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .detail-setup-group,
+  .lobby-card .detail-setup-group {
+    overflow: visible !important;
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+
+  .setup-item.full-width,
+  .toggle-row-grid .sound-setting,
+  .lobby-card.single-player-layout .toggle-row-grid .sound-setting,
+  .lobby-card.single-player-layout .toggle-row-grid #weakness-mode-setup {
+    grid-column: auto;
+  }
+
+  .toggle-row-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .lobby-card .setup-item {
+    padding: 7px 9px;
+  }
+
+  .setup-label {
+    font-size: 0.78rem;
+  }
+
+  .select-btn {
+    min-width: 0;
+    padding: 6px 5px;
+    font-size: 0.72rem;
+  }
+
+  .range-selector,
+  .mode-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .game-category-compact-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+    padding: 8px 10px;
+  }
+
+  .range-selector-compact {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .range-selector-compact .select-btn {
+    padding: 6px 4px;
+    font-size: 0.72rem;
+  }
+
+  .dan-checkbox-grid,
+  .dan-checkbox-grid.grid-19dan {
+    grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+    gap: 5px;
+  }
+
+  .dan-card label {
+    padding: 5px 0;
+    font-size: 0.72rem;
+  }
+
+  .action-btn-neon {
+    min-height: 36px;
+    padding: 8px;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  #game-grid.players-grid-2,
+  #game-grid.players-grid-3,
+  #game-grid.players-grid-4,
+  #game-grid.players-grid-5,
+  #game-grid.players-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  .player-column {
+    min-width: 0;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    padding: 8px;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .player-header {
+    min-width: 0;
+    padding-bottom: 5px;
+  }
+
+  .player-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+  }
+
+  .player-score {
+    font-size: 1.05rem;
+  }
+
+  .player-combo-badge {
+    font-size: 0.62rem;
+  }
+
+  .survival-timer-bar {
+    margin-top: 4px;
+  }
+
+  .equation-panel {
+    margin: 6px 0;
+  }
+
+  .equation-text,
+  .players-grid-4 .equation-text,
+  .players-grid-5 .equation-text,
+  .players-grid-6 .equation-text {
+    gap: 6px;
+    white-space: nowrap;
+    font-size: clamp(1.45rem, 6vw, 2.25rem) !important;
+  }
+
+  .equation-input-inline {
+    min-width: 26px;
+  }
+
+  .keypad-grid {
+    gap: 5px;
+  }
+
+  .key-btn {
+    min-height: 0;
+    padding: 8px 0;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  .key-btn.key-back,
+  .key-btn.key-clear {
+    font-size: 0.85rem;
+  }
+
+  #result-screen {
+    padding: 8px;
+  }
+
+  .global-result-title {
+    margin-bottom: 8px;
+    font-size: 1.35rem;
+  }
+
+  #result-grid.players-grid-2,
+  #result-grid.players-grid-3,
+  #result-grid.players-grid-4,
+  #result-grid.players-grid-5,
+  #result-grid.players-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  .result-column {
+    min-width: 0;
+    width: auto;
+    height: auto;
+    padding: 10px 8px;
+    gap: 8px;
+  }
+
+  .result-user-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.88rem;
+  }
+
+  .result-rank-badge {
+    font-size: 0.68rem;
+  }
+
+  .result-stats-grid {
+    gap: 6px;
+    margin: 8px 0;
+  }
+
+  .result-stat-card {
+    padding: 6px 3px;
+  }
+
+  .result-stat-label {
+    font-size: 0.58rem;
+  }
+
+  .result-stat-value {
+    font-size: 0.82rem;
+  }
+
+  .result-heatmap-sec {
+    margin-top: 6px;
+  }
+
+  .result-heatmap-scroll {
+    max-width: min(100%, 220px);
+    padding: 6px;
+    border-radius: 8px;
+  }
+
+  .result-tooltip-box {
+    min-height: 20px;
+    font-size: 0.58rem;
+  }
+
+  .result-analysis-card {
+    margin: 6px 0;
+    padding: 6px 8px;
+  }
+
+  .analysis-comment {
+    font-size: 0.66rem;
+  }
+
+  .result-actions-bar {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .result-actions-bar .action-btn-neon,
+  .result-actions-bar .action-btn-outline {
+    width: auto;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+
+  #countdown-number {
+    font-size: clamp(4rem, 22vw, 8rem);
+  }
+
+  .fever-start-toast {
+    width: min(92vw, 420px);
+    padding: 18px 20px;
+  }
+
+  .fever-start-toast h2 {
+    font-size: clamp(1.6rem, 8vw, 2.6rem);
+  }
+
+  .fever-start-toast p {
+    font-size: clamp(0.82rem, 4vw, 1rem);
+  }
+}
+
+@media (max-width: 460px) {
+  #app-header {
+    padding: 0 5px;
+  }
+
+  .header-btn {
+    max-width: 70px;
+    padding: 5px;
+    font-size: 0.64rem;
+  }
+
+  #btn-header-compat {
+    max-width: 76px;
+  }
+
+  #btn-header-sound {
+    max-width: 62px;
+  }
+
+  #btn-header-fullscreen {
+    max-width: 76px;
+  }
+
+  .lobby-card {
+    padding: 8px;
+  }
+
+  #user-setup-container {
+    max-height: 18dvh;
+  }
+
+  .player-column {
+    padding: 6px;
+  }
+
+  .equation-panel {
+    margin: 4px 0;
+  }
+
+  .equation-text,
+  .players-grid-4 .equation-text,
+  .players-grid-5 .equation-text,
+  .players-grid-6 .equation-text {
+    font-size: clamp(1.18rem, 5.6vw, 1.75rem) !important;
+  }
+
+  .keypad-grid {
+    gap: 4px;
+  }
+
+  .key-btn {
+    padding: 6px 0;
+    font-size: 0.86rem;
+  }
+
+  #result-grid.players-grid-2,
+  #result-grid.players-grid-3,
+  #result-grid.players-grid-4,
+  #result-grid.players-grid-5,
+  #result-grid.players-grid-6 {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(320px, auto);
+    overflow-y: auto;
+  }
+
+  .result-column {
+    min-height: 320px;
+  }
+
+  .result-actions-bar {
+    flex-direction: column;
+  }
+
+  .result-actions-bar .action-btn-neon,
+  .result-actions-bar .action-btn-outline {
+    width: 100%;
+    flex: none;
+  }
+}
+
+@media (max-height: 520px) {
+  .game-subtitle {
+    display: none;
+  }
+
+  .lobby-card {
+    padding: 8px 12px;
+  }
+
+  .game-title {
+    font-size: clamp(1.1rem, 5vh, 1.45rem);
+    margin-bottom: 4px;
+  }
+
+  #user-setup-container {
+    max-height: 18dvh;
+  }
+
+  .user-profile-setup-card {
+    padding: 5px 8px;
+  }
+
+  .lobby-grid {
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .lobby-card .setup-item {
+    padding: 6px 8px;
+    gap: 3px;
+  }
+
+  .game-category-compact-row {
+    padding: 7px 10px;
+  }
+
+  .player-column {
+    padding: 5px 7px;
+  }
+
+  .player-header {
+    padding-bottom: 4px;
+  }
+
+  .player-title {
+    font-size: 0.78rem !important;
+  }
+
+  .player-score {
+    font-size: 0.9rem;
+  }
+
+  .player-combo-badge {
+    font-size: 0.56rem;
+    padding: 1px 4px;
+  }
+
+  .survival-timer-bar {
+    height: 3px;
+    margin-top: 3px;
+  }
+
+  .equation-panel {
+    margin: 4px 0;
+    border-radius: 8px;
+  }
+
+  .equation-text,
+  .players-grid-4 .equation-text,
+  .players-grid-5 .equation-text,
+  .players-grid-6 .equation-text {
+    font-size: clamp(1.15rem, 7vh, 1.85rem) !important;
+  }
+
+  .keypad-grid {
+    gap: 4px;
+  }
+
+  .key-btn {
+    padding: 4px 0;
+    border-radius: 7px;
+    font-size: 0.82rem;
+  }
+
+  .key-btn.key-back,
+  .key-btn.key-clear {
+    font-size: 0.72rem;
+  }
+
+  .global-result-title {
+    margin-bottom: 6px;
+    font-size: 1.15rem;
+  }
+
+  #result-screen {
+    padding: 8px;
+  }
+
+  #result-grid {
+    margin-bottom: 8px;
+  }
+
+  .result-column {
+    padding: 8px 7px;
+    gap: 6px;
+  }
+
+  .result-heatmap-scroll {
+    max-width: min(100%, 150px);
+    padding: 5px;
+  }
+
+  .result-actions-bar .action-btn-neon,
+  .result-actions-bar .action-btn-outline {
+    padding: 7px 10px;
+    font-size: 0.72rem;
+  }
+}
+
 /* -------------------------------------------------------------
  * 8. Smartboard Compatibility Mode Overrides
  * ------------------------------------------------------------- */
@@ -2391,4 +3018,3 @@ body.compat-mode-active .fever-start-toast {
 .weakness-toggle-desc {
   white-space: nowrap;
 }
-
