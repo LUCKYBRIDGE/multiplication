@@ -561,7 +561,15 @@ function bindTouchInteraction(element, callback) {
 
   const handler = (e) => {
     e.preventDefault(); // 더블클릭 줌, 스마트보드 스크롤 방지
-    
+
+    if (e.type === 'pointerdown' && e.pointerId != null && element.setPointerCapture) {
+      try {
+        element.setPointerCapture(e.pointerId);
+      } catch (_) {
+        // 일부 내장 브라우저는 pointer capture를 지원해도 예외를 던질 수 있다.
+      }
+    }
+
     // 더블 트리거(touchstart와 pointerdown 중첩 실행) 방지 세마포어
     if (e.type === 'touchstart') {
       element.dataset.touchFired = 'true';
@@ -569,7 +577,7 @@ function bindTouchInteraction(element, callback) {
     } else if (e.type === 'pointerdown' && element.dataset.touchFired === 'true') {
       return;
     }
-    
+
     callback(e);
   };
 
@@ -577,7 +585,7 @@ function bindTouchInteraction(element, callback) {
   element.addEventListener('pointerdown', (e) => {
     if (activeCompatMode === 'compat') return; // 호환성 모드에서는 터치이벤트 강제 대응
     handler(e);
-  });
+  }, { passive: false });
 
   // 2) 터치 스타트 (구형 내장 브라우저 및 호환 모드 강제 대응)
   element.addEventListener('touchstart', (e) => {
@@ -593,6 +601,39 @@ function bindTouchInteraction(element, callback) {
       handler(e);
     }
   });
+}
+
+function triggerKeyButtonPress(keyBtn, playerId) {
+  if (!keyBtn || !playerId) return;
+
+  const now = performance.now();
+  const lastTriggeredAt = Number(keyBtn.dataset.lastTriggeredAt || 0);
+  if (now - lastTriggeredAt < 30) return;
+  keyBtn.dataset.lastTriggeredAt = String(now);
+
+  keyBtn.classList.add('active');
+  handlePlayerKeyInput(playerId, keyBtn.dataset.key);
+  setTimeout(() => keyBtn.classList.remove('active'), 100);
+}
+
+function bindGameGridMultiTouchFallback(container) {
+  if (!container || container.dataset.multiTouchFallbackBound === 'true') return;
+  container.dataset.multiTouchFallbackBound = 'true';
+
+  container.addEventListener('touchstart', (e) => {
+    const shouldUseFallback = (activeCompatMode === 'compat') || (activeCompatMode === 'auto' && !window.PointerEvent);
+    if (!shouldUseFallback) return;
+
+    e.preventDefault();
+    Array.from(e.changedTouches || []).forEach(touch => {
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const keyBtn = target && target.closest ? target.closest('.key-btn') : null;
+      if (!keyBtn || !container.contains(keyBtn)) return;
+
+      const playerId = Number(keyBtn.dataset.playerId || 0);
+      triggerKeyButtonPress(keyBtn, playerId);
+    });
+  }, { passive: false, capture: true });
 }
 
 // 호환 모드별 메타 정보 (레이블, 부설명, 상세 안내)
@@ -1851,13 +1892,11 @@ function buildGamePlayLayout() {
     // 키패드 터치 및 포인터 이벤트 리스너 바인딩
     const keys = col.querySelectorAll('.key-btn');
     keys.forEach(keyBtn => {
+      keyBtn.dataset.playerId = String(player.id);
       bindTouchInteraction(keyBtn, (e) => {
-        keyBtn.classList.add('active');
-        handlePlayerKeyInput(player.id, keyBtn.dataset.key);
-        // 터치 릴리즈 이벤트 누락 대비 100ms 강제 펄스 오프
-        setTimeout(() => keyBtn.classList.remove('active'), 100);
+        triggerKeyButtonPress(keyBtn, player.id);
       });
-      
+
       // 마우스/포인터 릴리즈 시 즉시 이펙트 소거 백업 리스너
       const releaseKey = () => keyBtn.classList.remove('active');
       keyBtn.addEventListener('pointerup', releaseKey);
@@ -1870,6 +1909,8 @@ function buildGamePlayLayout() {
     // 최초 문제 로드
     showNextQuestion(player.id);
   });
+
+  bindGameGridMultiTouchFallback(container);
 }
 
 // 시작 전 3초 대기 카운트다운
