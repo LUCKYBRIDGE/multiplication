@@ -1,5 +1,5 @@
 /**
- * 곱셈 게임 - 스마트보드 에디션 코어 스크립트
+ * 연산 배틀 - 스마트보드 에디션 코어 스크립트
  */
 
 // -------------------------------------------------------------
@@ -2528,7 +2528,7 @@ function renderResultsDashboard() {
         <div class="result-analysis-card perfect">
           <div class="analysis-comment">🎉 완벽해요! 모든 문제를 실수 없이 해결했습니다.</div>
           <div class="top-weak-list">
-            <span class="perfect-tag">곱셈 마스터</span>
+            <span class="perfect-tag">연산 마스터</span>
             <span class="perfect-tag">속도 만점</span>
           </div>
         </div>
@@ -2835,4 +2835,3 @@ function triggerFeverTimeStart() {
     }, 1400);
   }
 }
-
